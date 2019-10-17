@@ -1,0 +1,9 @@
+# Certificates and keys
+*.pem
+
+# Binaries
+hooktail
+
+# Configuration files
+!.config.example.yml
+*.yml
