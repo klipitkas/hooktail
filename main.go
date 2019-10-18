@@ -115,12 +115,6 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	if err = d.Run(); err != nil {
 		log.Printf("run deployment: %v", err)
 	}
-
-	// requestDump, err := httputil.DumpRequest(req, true)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Println(string(requestDump))
 }
 
 func findMatchingDeployment(sshURL string) deployment.Deployment {
