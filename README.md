@@ -2,22 +2,14 @@
 
 <img src="https://www.mariowiki.com/images/thumb/d/dd/Hooktail_Artwork_-_Paper_Mario_The_Thousand-Year_Door.png/1254px-Hooktail_Artwork_-_Paper_Mario_The_Thousand-Year_Door.png" width="150">
 
-Hooktail is a server written in go that can be used for github webhook deployments.
+Hooktail is an HTTP server written in Go that can be used for github webhook
+deployments.
 
 ## REQUIREMENTS
 
 - [Go](https://golang.org/) >= **1.13**
 
 ## CONFIGURATION
-
-First generate an SSL certificate:
-
-```bash
-openssl req -newkey rsa:4096 \
-  -nodes -keyout key.pem \
-  -x509 -days 365 \
-  -out cert.pem
-```
 
 Copy the sample configuration file and edit as per your liking:
 
@@ -44,3 +36,10 @@ you can use the following flag:
 ```bash
 ./hooktail -config <path-to-config.yml>
 ```
+
+## TLS / SSL SUPPORT
+
+Since **Hooktail** only supports HTTP, it cannot handle SSL termination. In
+order to handle SSL termination you need a reverse proxy such as:
+- [Nginx](https://www.nginx.com)
+- [Haproxy](https://www.haproxy.org)

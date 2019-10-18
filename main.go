@@ -1,17 +1,26 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	common "github.com/klipitkas/hooktail/common"
 	deployment "github.com/klipitkas/hooktail/deployment"
+	"github.com/klipitkas/hooktail/request"
 
 	"gopkg.in/yaml.v2"
+)
+
+// The content type we want
+const (
+	ApplicationJSON           string = "application/json"
+	ApplicationFormURLEncoded string = "application/x-www-form-urlencoded"
 )
 
 // DeploymentRunner is the interface that implements
@@ -45,7 +54,8 @@ func main() {
 	// The path to the configuration file.
 	var configPath string
 
-	flag.StringVar(&configPath, "config", "config.yml", "The configuration file path.")
+	flag.StringVar(&configPath, "config", "config.yml",
+		"The configuration file path.")
 	flag.Parse()
 
 	// Read configuration
@@ -65,34 +75,40 @@ func main() {
 	http.HandleFunc("/", handleRequest)
 
 	// Log the server start.
-	log.Printf("Starting TLS server on port: %v", config.Port)
+	log.Printf("Starting HTTP server on port: %v", config.Port)
+
+	// The port.
+	portStr := strconv.Itoa(config.Port)
 
 	// The server configuration.
-	if err = http.ListenAndServeTLS(
-		":"+strconv.Itoa(config.Port),
-		config.TLSConfig.PubKeyPath,
-		config.TLSConfig.PrivKeyPath,
-		nil,
-	); err != nil {
-		log.Fatalf("listen on port %d: %v", config.Port, err)
+	if err = http.ListenAndServe(":"+portStr, nil); err != nil {
+		log.Fatalf("listen on port %d failed: %v", config.Port, err)
 	}
 
 }
 
 func handleRequest(w http.ResponseWriter, req *http.Request) {
-	_, err := ioutil.ReadAll(req.Body)
 
-	if err != nil {
-		log.Printf("parsing request: %v", err)
+	// The body of the request.
+	body, err := ioutil.ReadAll(req.Body)
+
+	// Extract the content type from the headers.
+	contentType := strings.ToLower(req.Header.Get("Content-Type"))
+
+	if contentType != ApplicationJSON {
+		log.Printf("got invalid request content type: %v", contentType)
 		return
 	}
 
-	// request := Request{}
+	// The expected request struct.
+	request := &request.Request{}
 
-	// if err := json.Unmarshal(body, &request); err != nil {
-	// 	log.Printf("cannot unmarshal string: %v", err)
-	// 	return
-	// }
+	if err := json.Unmarshal(body, request); err != nil {
+		log.Printf("cannot unmarshal string: %v", err)
+		return
+	}
+
+	log.Printf("got request: %+v", request)
 
 	d := findMatchingDeployment("git@github.com:klipitkas/remove_greek_accents.git")
 
