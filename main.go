@@ -77,11 +77,6 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Log the request
-	log.Printf("got request: %+v", request)
-	log.Printf("got body: %s", string(body))
-	log.Printf("got secret: %s", givenHash)
-
 	// Check if request matches a deployment.
 	match := deployment.FindMatching(conf.Deployments, request)
 

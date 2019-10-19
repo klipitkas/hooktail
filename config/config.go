@@ -12,13 +12,6 @@ import (
 type Config struct {
 	// The port that the server will listen to.
 	Port int `yaml:"port" json:"port"`
-	// The TLS configuration.
-	TLSConfig struct {
-		// The path to the public key.
-		PubKeyPath string `yaml:"public_key_path" json:"public_key_path"`
-		// The path to the private key.
-		PrivKeyPath string `yaml:"private_key_path" json:"private_key_path"`
-	} `yaml:"tlsconfig" json:"tlsconfig"`
 	// The list of deployments.
 	Deployments []deployment.Deployment `yaml:"deployments,omitempty" json:"deployments,omitempty"`
 }

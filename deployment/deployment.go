@@ -111,12 +111,12 @@ func Deploy(d Deployment) error {
 func run(d Deployment) error {
 	// Run the deployment
 	args := []string{"remote", "update"}
-	if err := common.ExecuteCommand("git", d.User, d.Path, args...); err != nil {
+	if _, err := common.ExecuteCommand("git", d.User, d.Path, args...); err != nil {
 		return fmt.Errorf("git remote update: %v", err)
 	}
 
 	args = []string{"reset", "--hard", "origin/" + d.Branch}
-	if err := common.ExecuteCommand("git", d.User, d.Path, args...); err != nil {
+	if _, err := common.ExecuteCommand("git", d.User, d.Path, args...); err != nil {
 		return fmt.Errorf("hard reset to %v branch: %v", d.Branch, err)
 	}
 
@@ -126,7 +126,7 @@ func run(d Deployment) error {
 // runScript runs a bash deployment script.
 func runScript(path string, user string) error {
 	args := []string{path}
-	if err := common.ExecuteCommand("/bin/sh", user, "", args...); err != nil {
+	if _, err := common.ExecuteCommand("/bin/sh", user, "", args...); err != nil {
 		return fmt.Errorf("run script: %v", err)
 	}
 	return nil
