@@ -17,7 +17,7 @@ deployments.
 
 Copy the sample configuration file and edit as per your liking:
 
-```bash
+```
 cp config.example.yml config.yml
 ```
 
@@ -27,7 +27,7 @@ The available configuration is listed in the **config.example.yml** file.
 
 You can build and run the server using the following commands:
 
-```bash
+```
 go build && sudo ./hooktail
 ```
 
@@ -37,7 +37,7 @@ specific user.
 In order to specify a custom configuration file (other than **config.yml**)
 you can use the following flag:
 
-```bash
+```
 ./hooktail -config <path-to-config.yml>
 ```
 
