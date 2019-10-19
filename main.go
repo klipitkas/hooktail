@@ -3,10 +3,10 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 
 	config "github.com/klipitkas/hooktail/config"
@@ -23,7 +23,6 @@ const (
 var conf config.Config
 
 func main() {
-
 	// The path to the configuration file.
 	configPath := ""
 
@@ -32,8 +31,7 @@ func main() {
 	flag.Parse()
 
 	// The configuration struct.
-	conf, err := config.Parse(configPath)
-	if err != nil {
+	if err := config.Parse(&conf, configPath); err != nil {
 		log.Fatalf("parsing configuration: %v", err)
 	}
 
@@ -43,14 +41,13 @@ func main() {
 	// Log the server start.
 	log.Printf("Starting HTTP server on port: %v", conf.Port)
 
-	// The port.
-	portStr := strconv.Itoa(conf.Port)
+	// The port in string format.
+	portStr := fmt.Sprintf("%d", conf.Port)
 
 	// The server configuration.
-	if err = http.ListenAndServe(":"+portStr, nil); err != nil {
+	if err := http.ListenAndServe(":"+portStr, nil); err != nil {
 		log.Fatalf("listen on port %d failed: %v", conf.Port, err)
 	}
-
 }
 
 func handleRequest(w http.ResponseWriter, req *http.Request) {
@@ -61,7 +58,10 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	// Extract the content type from the headers.
 	contentType := strings.ToLower(req.Header.Get("Content-Type"))
 	// Extract the given hash if it exists.
-	givenHash := strings.ToLower(req.Header.Get("X-Hub-Signature"))
+	givenHash := strings.ReplaceAll(
+		strings.ToLower(req.Header.Get("X-Hub-Signature")),
+		"sha1=",
+		"")
 
 	if contentType != ApplicationJSON {
 		log.Printf("got invalid request content type: %v", contentType)
@@ -74,18 +74,29 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 
 	if err := json.Unmarshal(body, &request.Body); err != nil {
 		log.Printf("cannot unmarshal string: %v", err)
+		w.WriteHeader(500)
+		w.Write([]byte("Error parsing request body to request struct."))
 		return
 	}
 
 	// Check if request matches a deployment.
 	match := deployment.FindMatching(conf.Deployments, request)
+	notFound := deployment.Deployment{}
+
+	if match == notFound {
+		log.Printf("A deployment that matches the request cannot be found!")
+		w.WriteHeader(404)
+		w.Write([]byte("A matching deployment was not found."))
+		return
+	}
 
 	// Check the validity of the request and deployment.
 	if match.Secret != "" {
-		log.Printf("Check request integrity.")
 		ok := request.HasValidSignature(match.Secret, string(body), givenHash)
 		if !ok {
-			log.Printf("Request is not valid, secrets did not match!")
+			log.Printf("Request integrity check failed, please verify the secret!")
+			w.WriteHeader(400)
+			w.Write([]byte("Invalid secret or signature."))
 			return
 		}
 	}
@@ -93,6 +104,11 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	// Run the deployment.
 	if err = deployment.Deploy(match); err != nil {
 		log.Printf("run deployment: %v", err)
+		w.WriteHeader(500)
+		w.Write([]byte("Deployment failed."))
+		return
 	}
 
+	w.WriteHeader(200)
+	w.Write([]byte("Deployment successfully completed."))
 }

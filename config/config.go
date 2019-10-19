@@ -19,21 +19,15 @@ type Config struct {
 // Parse parses a YAML file that contains the configuration
 // and returns a Config struct as the result if the
 // parsing is successful.
-func Parse(configPath string) (Config, error) {
-
-	// The default configuration is empty.
-	config := Config{}
-
+func Parse(config *Config, configPath string) error {
 	// Read configuration
 	b, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		return config, fmt.Errorf("read yaml file %v: %v", configPath, err)
+		return fmt.Errorf("read yaml file %v: %v", configPath, err)
 	}
-
 	// Unmarshal to struct
 	if err := yaml.Unmarshal(b, &config); err != nil {
-		return config, fmt.Errorf("unmarshal yaml to struct: %v", err)
+		return fmt.Errorf("unmarshal yaml to struct: %v", err)
 	}
-
-	return config, nil
+	return nil
 }

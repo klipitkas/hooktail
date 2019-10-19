@@ -83,9 +83,9 @@ type Request struct {
 			LabelsURL        string      `json:"labels_url"`
 			ReleasesURL      string      `json:"releases_url"`
 			DeploymentsURL   string      `json:"deployments_url"`
-			CreatedAt        string      `json:"created_at"`
+			CreatedAt        int         `json:"created_at"`
 			UpdatedAt        string      `json:"updated_at"`
-			PushedAt         string      `json:"pushed_at"`
+			PushedAt         int         `json:"pushed_at"`
 			GitURL           string      `json:"git_url"`
 			SSHURL           string      `json:"ssh_url"`
 			CloneURL         string      `json:"clone_url"`

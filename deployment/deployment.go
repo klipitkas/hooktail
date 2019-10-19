@@ -115,6 +115,11 @@ func run(d Deployment) error {
 		return fmt.Errorf("git remote update: %v", err)
 	}
 
+	args = []string{"checkout", d.Branch}
+	if _, err := common.ExecuteCommand("git", d.User, d.Path, args...); err != nil {
+		return fmt.Errorf("checkout to branch %v: %v", d.Branch, err)
+	}
+
 	args = []string{"reset", "--hard", "origin/" + d.Branch}
 	if _, err := common.ExecuteCommand("git", d.User, d.Path, args...); err != nil {
 		return fmt.Errorf("hard reset to %v branch: %v", d.Branch, err)
