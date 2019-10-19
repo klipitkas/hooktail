@@ -1,5 +1,7 @@
 # Hooktail
 
+[![CodeFactor](https://www.codefactor.io/repository/github/klipitkas/hooktail/badge?s=afe43e6de344ceb5e154110b38cbecf8dcbf3568)](https://www.codefactor.io/repository/github/klipitkas/hooktail)
+
 <img src="https://www.mariowiki.com/images/thumb/d/dd/Hooktail_Artwork_-_Paper_Mario_The_Thousand-Year_Door.png/1254px-Hooktail_Artwork_-_Paper_Mario_The_Thousand-Year_Door.png" width="150">
 
 Hooktail is an HTTP server written in Go that can be used for github webhook
