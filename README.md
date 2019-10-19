@@ -38,7 +38,7 @@ In order to specify a custom configuration file (other than **config.yml**)
 you can use the following flag:
 
 ```
-./hooktail -config <path-to-config.yml>
+sudo ./hooktail -config <path-to-config.yml>
 ```
 
 ## TLS / SSL SUPPORT
