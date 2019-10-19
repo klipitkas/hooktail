@@ -2,6 +2,9 @@ package common
 
 import (
 	"bytes"
+	"crypto/hmac"
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
@@ -61,4 +64,11 @@ func UserIDsFromUsername(username string) (uint32, uint32, error) {
 	}
 
 	return uint32(uid), uint32(gid), nil
+}
+
+// Sha1Hmac returns the hmac sha1 hash of message m based on secret s.
+func Sha1Hmac(message, secret string) string {
+	h := hmac.New(sha1.New, []byte(secret))
+	h.Write([]byte(message))
+	return hex.EncodeToString(h.Sum(nil))
 }

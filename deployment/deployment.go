@@ -8,12 +8,13 @@ import (
 	"path"
 
 	"github.com/klipitkas/hooktail/common"
-	"github.com/klipitkas/hooktail/config"
 	"github.com/klipitkas/hooktail/request"
 )
 
 // Deployment is the specific deployment configuration.
 type Deployment struct {
+	// The secret for checking the integrity of the request.
+	Secret string `yaml:"secret,omitempty" json:"secret,omitempty"`
 	// The username of the user that will perform the deployment.
 	User string `yaml:"user,omitempty" json:"user,omitempty"`
 	// The repository of the project that will be deployed.
@@ -30,6 +31,7 @@ type Deployment struct {
 
 // Validate validates a specified deployment configuration.
 func Validate(d Deployment) error {
+
 	// Basic validation checks
 	if d.User == "" {
 		return errors.New("invalid or empty user")
@@ -152,13 +154,11 @@ func runAfter(d Deployment) error {
 
 // FindMatching searches for a matching deployment in the YAML
 // configuration file when parsing the request.
-func FindMatching(config config.Config, req request.Request) Deployment {
-	deployment := Deployment{}
-	for _, deps := range config.Deployments {
-		deployment := deps["deployment"]
-		if deployment.Repository == req.Repository.SSHURL {
-			return deployment
+func FindMatching(list []Deployment, req request.Request) Deployment {
+	for _, dep := range list {
+		if dep.Repository == req.Body.Repository.SSHURL {
+			return dep
 		}
 	}
-	return deployment
+	return Deployment{}
 }

@@ -60,6 +60,8 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 
 	// Extract the content type from the headers.
 	contentType := strings.ToLower(req.Header.Get("Content-Type"))
+	// Extract the given hash if it exists.
+	givenHash := strings.ToLower(req.Header.Get("X-Hub-Signature"))
 
 	if contentType != ApplicationJSON {
 		log.Printf("got invalid request content type: %v", contentType)
@@ -68,17 +70,30 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 
 	// The expected request struct.
 	request := request.Request{}
+	request.Headers = req.Header
 
-	if err := json.Unmarshal(body, &request); err != nil {
+	if err := json.Unmarshal(body, &request.Body); err != nil {
 		log.Printf("cannot unmarshal string: %v", err)
 		return
 	}
 
 	// Log the request
 	log.Printf("got request: %+v", request)
+	log.Printf("got body: %s", string(body))
+	log.Printf("got secret: %s", givenHash)
 
 	// Check if request matches a deployment.
-	match := deployment.FindMatching(conf, request)
+	match := deployment.FindMatching(conf.Deployments, request)
+
+	// Check the validity of the request and deployment.
+	if match.Secret != "" {
+		log.Printf("Check request integrity.")
+		ok := request.HasValidSignature(match.Secret, string(body), givenHash)
+		if !ok {
+			log.Printf("Request is not valid, secrets did not match!")
+			return
+		}
+	}
 
 	// Run the deployment.
 	if err = deployment.Deploy(match); err != nil {

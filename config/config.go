@@ -12,8 +12,6 @@ import (
 type Config struct {
 	// The port that the server will listen to.
 	Port int `yaml:"port" json:"port"`
-	// The secret that is used for the deployment.
-	Secret string `yaml:"secret,omitempty" json:"secret,omitempty"`
 	// The TLS configuration.
 	TLSConfig struct {
 		// The path to the public key.
@@ -22,7 +20,7 @@ type Config struct {
 		PrivKeyPath string `yaml:"private_key_path" json:"private_key_path"`
 	} `yaml:"tlsconfig" json:"tlsconfig"`
 	// The list of deployments.
-	Deployments []map[string]deployment.Deployment `yaml:"deployments,omitempty" json:"deployments,omitempty"`
+	Deployments []deployment.Deployment `yaml:"deployments,omitempty" json:"deployments,omitempty"`
 }
 
 // Parse parses a YAML file that contains the configuration
