@@ -37,11 +37,11 @@ func ExecuteCommand(cmd string, username string, workDir string, args ...string)
 	command.Stderr = mw
 
 	if err := command.Start(); err != nil {
-		return "", fmt.Errorf("start command %q: %v", command, err)
+		return "", fmt.Errorf("start command %q: %v", cmd, err)
 	}
 
 	if err := command.Wait(); err != nil {
-		return "", fmt.Errorf("wait for command %q: %v", command, err)
+		return "", fmt.Errorf("wait for command %q: %v", cmd, err)
 	}
 
 	return buf.String(), nil
