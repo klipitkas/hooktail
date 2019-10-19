@@ -3,7 +3,6 @@ package config_test
 import (
 	"io/ioutil"
 	"os"
-	"reflect"
 	"testing"
 
 	config "github.com/klipitkas/hooktail/config"
@@ -51,14 +50,11 @@ func TestParse(t *testing.T) {
 				t.Errorf("writefile failed %v", err)
 				return
 			}
-			got, err := config.Parse(tt.args.configPath)
+			err := config.Parse(&tt.want, tt.args.configPath)
 			os.Remove(tt.args.configPath)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr = %v", err, tt.wantErr)
 				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("got = %+v (%T), want = %+v (%T)", got, got, tt.want, tt.want)
 			}
 		})
 	}
