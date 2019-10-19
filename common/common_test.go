@@ -186,3 +186,35 @@ func TestUserCredentialsFromUsername(t *testing.T) {
 		})
 	}
 }
+
+func TestSha1Hmac(t *testing.T) {
+
+	type args struct {
+		message string
+		secret  string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			"Test the sha1 hmac",
+			args{
+				message: "hello world",
+				secret:  "highly-confidential",
+			},
+			"fff38e0f32c33ee507fcba0e5ad48e4a8671b5db",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := common.Sha1Hmac(tt.args.message, tt.args.secret)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("got = %+v (%T), want = %+v (%T)", got, got, tt.want, tt.want)
+			}
+		})
+	}
+}
