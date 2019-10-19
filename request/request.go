@@ -194,8 +194,8 @@ type Request struct {
 }
 
 // Parse the request from the body to the struct.
-func (r *Request) Parse(body string) error {
-	if err := json.Unmarshal([]byte(body), &r); err != nil {
+func (r *Request) Parse(body []byte) error {
+	if err := json.Unmarshal(body, &r.Body); err != nil {
 		return fmt.Errorf("unmarshal request body to json: %v", err)
 	}
 	return nil

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -72,7 +71,7 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	request := request.Request{}
 	request.Headers = req.Header
 
-	if err := json.Unmarshal(body, &request.Body); err != nil {
+	if err = request.Parse(body); err != nil {
 		log.Printf("cannot unmarshal string: %v", err)
 		w.WriteHeader(500)
 		w.Write([]byte("Error parsing request body to request struct."))
