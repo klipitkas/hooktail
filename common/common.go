@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"os/user"
@@ -12,33 +11,22 @@ import (
 	"syscall"
 )
 
+// ExecuteCommand runs a specific shell command in the target system.
 func ExecuteCommand(cmd string, username string, workDir string, args ...string) error {
-
-	command := exec.Command(cmd, args...)
-
-	u, err := user.Lookup(username)
-
-	if err != nil {
-		return fmt.Errorf("get user from username %s: %v", username, err)
-	}
-
-	uidInt, err := strconv.ParseUint(u.Uid, 10, 32)
-	gidInt, err := strconv.ParseUint(u.Gid, 10, 32)
-
-	command.SysProcAttr = &syscall.SysProcAttr{}
-	command.SysProcAttr.Credential = &syscall.Credential{
-		Uid: uint32(uidInt),
-		Gid: uint32(gidInt),
-	}
-
-	log.Printf("Running command %s as user %s with id %v and gid %v.", cmd, username, uidInt, gidInt)
-
-	command.Env = os.Environ()
-	command.Dir = workDir
 
 	var buf bytes.Buffer
 	mw := io.MultiWriter(&buf)
 
+	uid, gid, err := UserIDsFromUsername(username)
+	if err != nil {
+		return fmt.Errorf("getting user details: %v", err)
+	}
+
+	command := exec.Command(cmd, args...)
+	command.SysProcAttr = &syscall.SysProcAttr{}
+	command.SysProcAttr.Credential = &syscall.Credential{Uid: uid, Gid: gid}
+	command.Env = os.Environ()
+	command.Dir = workDir
 	command.Stdout = mw
 	command.Stderr = mw
 
@@ -50,7 +38,27 @@ func ExecuteCommand(cmd string, username string, workDir string, args ...string)
 		return fmt.Errorf("wait for command %q: %v", command, err)
 	}
 
-	log.Printf("%v", buf.String())
-
 	return nil
+}
+
+// UserIDsFromUsername returns the user id and group id for
+// a specific system user.
+func UserIDsFromUsername(username string) (uint32, uint32, error) {
+
+	user, err := user.Lookup(username)
+	if err != nil {
+		return 0, 0, fmt.Errorf("get user from username %s: %v", username, err)
+	}
+
+	uid, err := strconv.ParseUint(user.Uid, 10, 32)
+	if err != nil {
+		return 0, 0, fmt.Errorf("convert uid to uint64: %v", err)
+	}
+
+	gid, err := strconv.ParseUint(user.Gid, 10, 32)
+	if err != nil {
+		return 0, 0, fmt.Errorf("convert gid to uint64: %v", err)
+	}
+
+	return uint32(uid), uint32(gid), nil
 }

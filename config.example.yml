@@ -1,18 +1,18 @@
 port: 5042
 deployments:
-  - deployment:
-      secret: ""
-      user: klipitkas
-      repository: "git@github.com:klipitkas/remove_greek_accents.git"
-      branch: master
-      path: /home/klipitkas/test
-      before_script: /home/klipitkas/jwt-go/before.sh
-      after_script: /home/klipitkas/jwt-go/after.sh
-  - deployment:
-      secret: ""
-      user: klipitkas
-      repository: "git@github.com:klipitkas/remove_greek_accents.git"
-      branch: master
-      path: /home/klipitkas/test
-      before_script: /home/klipitkas/jwt-go/before.sh
-      after_script: /home/klipitkas/jwt-go/after.sh
+    - deployment:
+          secret: ""
+          user: klipitkas
+          repository: git@github.com:klipitkas/remove_greek_accents.git
+          branch: master
+          path: /home/klipitkas/test
+          before_script: /home/klipitkas/jwt-go/before.sh
+          after_script: /home/klipitkas/jwt-go/after.sh
+    - deployment:
+          secret: ""
+          user: klipitkas
+          repository: git@github.com:klipitkas/remove_greek_accents.git
+          branch: master
+          path: /home/klipitkas/test
+          before_script: /home/klipitkas/jwt-go/before.sh
+          after_script: /home/klipitkas/jwt-go/after.sh
