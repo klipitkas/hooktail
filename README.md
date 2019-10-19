@@ -23,6 +23,14 @@ cp config.example.yml config.yml
 
 The available configuration is listed in the **config.example.yml** file.
 
+## RUN THE TESTS
+
+You can run all the available unit tests using the command below:
+
+```
+go test -v ./...
+```
+
 ## BUILD & RUN
 
 You can build and run the server using the following commands:
