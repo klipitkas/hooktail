@@ -3,6 +3,7 @@ package request
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/klipitkas/hooktail/common"
@@ -10,8 +11,9 @@ import (
 
 // Request contains any needed request information.
 type Request struct {
-	Headers map[string][]string
-	Body    struct {
+	Headers  map[string][]string
+	JSONBody string
+	Body     struct {
 		Ref        string `json:"ref"`
 		Before     string `json:"before"`
 		After      string `json:"after"`
@@ -201,8 +203,18 @@ func (r *Request) Parse(body []byte) error {
 	return nil
 }
 
+// Hash returns the sha1 hash from the headers of the request.
+func (r *Request) Hash() string {
+	if r.Headers == nil ||
+		r.Headers["X-Hub-Signature"] == nil ||
+		r.Headers["X-Hub-Signature"][0] == "" {
+		return ""
+	}
+	return strings.ReplaceAll(r.Headers["X-Hub-Signature"][0], "sha1=", "")
+}
+
 // HasValidSignature checks if the an HMAC hash has a valid
 // signature given a key "secret".
-func (r *Request) HasValidSignature(secret, body, hash string) bool {
-	return common.Sha1Hmac(body, secret) == hash
+func (r *Request) HasValidSignature(secret string) bool {
+	return common.Sha1Hmac(r.JSONBody, secret) == r.Hash()
 }

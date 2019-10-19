@@ -56,20 +56,16 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 
 	// Extract the content type from the headers.
 	contentType := strings.ToLower(req.Header.Get("Content-Type"))
-	// Extract the given hash if it exists.
-	givenHash := strings.ReplaceAll(
-		strings.ToLower(req.Header.Get("X-Hub-Signature")),
-		"sha1=",
-		"")
-
 	if contentType != ApplicationJSON {
 		log.Printf("got invalid request content type: %v", contentType)
 		return
 	}
 
-	// The expected request struct.
-	request := request.Request{}
-	request.Headers = req.Header
+	// Construct the request struct.
+	request := request.Request{
+		Headers:  req.Header,
+		JSONBody: string(body),
+	}
 
 	if err = request.Parse(body); err != nil {
 		log.Printf("cannot unmarshal string: %v", err)
@@ -91,7 +87,7 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 
 	// Check the validity of the request and deployment.
 	if match.Secret != "" {
-		ok := request.HasValidSignature(match.Secret, string(body), givenHash)
+		ok := request.HasValidSignature(match.Secret)
 		if !ok {
 			log.Printf("Request integrity check failed, please verify the secret!")
 			w.WriteHeader(400)

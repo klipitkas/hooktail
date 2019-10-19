@@ -80,7 +80,53 @@ func TestRequestHasValidSignature(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			req := request.Request{}
-			got := req.HasValidSignature(tt.args.secret, tt.args.body, tt.args.hash)
+			req.JSONBody = tt.args.body
+			req.Headers = make(map[string][]string, 1)
+			req.Headers["X-Hub-Signature"] = []string{"sha1=77ca6ab111eac1d56346565bf3cdf6cdb0d2a890"}
+			got := req.HasValidSignature(tt.args.secret)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("got = %+v (%T), want = %+v (%T)", got, got, tt.want, tt.want)
+			}
+		})
+	}
+}
+
+func TestRequestHash(t *testing.T) {
+
+	type args struct {
+		headerName  string
+		headerValue string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			"Test that the signature is correct",
+			args{
+				headerName:  "X-Hub-Signature",
+				headerValue: "sha1=77ca6ab111eac1d56346565bf3cdf6cdb0d2a890",
+			},
+			"77ca6ab111eac1d56346565bf3cdf6cdb0d2a890",
+		},
+		{
+			"Test that the signature is empty when header is not present",
+			args{
+				headerName:  "",
+				headerValue: "",
+			},
+			"",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := request.Request{}
+			req.Headers = make(map[string][]string, 1)
+			req.Headers[tt.args.headerName] = []string{tt.args.headerValue}
+			got := req.Hash()
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("got = %+v (%T), want = %+v (%T)", got, got, tt.want, tt.want)
 			}
