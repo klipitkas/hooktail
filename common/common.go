@@ -6,7 +6,6 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"os/user"
@@ -19,13 +18,12 @@ func ExecuteCommand(cmd string, username string, workDir string, args ...string)
 
 	command := exec.Command(cmd, args...)
 
-	var buf bytes.Buffer
-	mw := io.MultiWriter(&buf)
+	var outBuf, errorBuf bytes.Buffer
 
 	if username != "" {
 		credentials, err := UserCredentialsFromUsername(username)
 		if err != nil {
-			return "", fmt.Errorf("get user id, gid from username %v: %v", username, err)
+			return "", fmt.Errorf("get user id, gid from username %s: %v", username, err)
 		}
 		command.SysProcAttr = &syscall.SysProcAttr{}
 		command.SysProcAttr.Credential = credentials
@@ -33,18 +31,20 @@ func ExecuteCommand(cmd string, username string, workDir string, args ...string)
 
 	command.Env = os.Environ()
 	command.Dir = workDir
-	command.Stdout = mw
-	command.Stderr = mw
+	command.Stdout = &outBuf
+	command.Stderr = &errorBuf
 
 	if err := command.Start(); err != nil {
-		return "", fmt.Errorf("start command %q: %v", cmd, err)
+		return "", fmt.Errorf("start command %q: %v: stderr: %s, stdout: %s",
+			cmd, err, errorBuf.String(), outBuf.String())
 	}
 
 	if err := command.Wait(); err != nil {
-		return "", fmt.Errorf("wait for command %q: %v", cmd, err)
+		return "", fmt.Errorf("wait for command %q: %v: stderr: %s, stdout: %s",
+			cmd, err, errorBuf.String(), outBuf.String())
 	}
 
-	return buf.String(), nil
+	return outBuf.String(), nil
 }
 
 // UserCredentialsFromUsername returns user credentials based on the
@@ -65,7 +65,7 @@ func UserCredentialsFromUsername(username string) (*syscall.Credential, error) {
 func UIDFromUsername(username string) (uint32, error) {
 	user, err := user.Lookup(username)
 	if err != nil {
-		return 0, fmt.Errorf("lookup user %v: %v", username, err)
+		return 0, fmt.Errorf("lookup user %s: %v", username, err)
 	}
 	uid, err := strconv.ParseUint(user.Uid, 10, 32)
 	if err != nil {
@@ -78,7 +78,7 @@ func UIDFromUsername(username string) (uint32, error) {
 func GIDFromUsername(username string) (uint32, error) {
 	user, err := user.Lookup(username)
 	if err != nil {
-		return 0, fmt.Errorf("lookup user %v: %v", username, err)
+		return 0, fmt.Errorf("lookup user %s: %v", username, err)
 	}
 	gid, err := strconv.ParseUint(user.Gid, 10, 32)
 	if err != nil {
