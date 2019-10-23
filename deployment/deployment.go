@@ -52,27 +52,30 @@ func Validate(d Deployment) error {
 	// }
 
 	if _, err := user.Lookup(d.User); err != nil {
-		return fmt.Errorf("check user existence: %v", err)
+		return fmt.Errorf("check user existence %s: %v", d.User, err)
 	}
 
 	if _, err := os.Stat(d.Path); os.IsNotExist(err) {
-		return fmt.Errorf("check path existence: %v", err)
+		return fmt.Errorf("check path existence %s: %v", d.Path, err)
 	}
 
-	if _, err := os.Stat(path.Join(d.Path, ".git")); os.IsNotExist(err) {
-		return fmt.Errorf("check .git inside path existence: %v", err)
+	gitDir := path.Join(d.Path, ".git")
+	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
+		return fmt.Errorf("check .git inside path %s existence: %v", gitDir, err)
 	}
 
 	// Checking before and after script existence
 	if d.BeforeScript != "" {
 		if _, err := os.Stat(d.BeforeScript); os.IsNotExist(err) {
-			return fmt.Errorf("check before script existence: %v", err)
+			return fmt.Errorf("check before script %s existence: %v",
+				d.BeforeScript, err)
 		}
 	}
 
 	if d.AfterScript != "" {
-		if _, err := os.Stat(d.BeforeScript); os.IsNotExist(err) {
-			return fmt.Errorf("check after script existence: %v", err)
+		if _, err := os.Stat(d.AfterScript); os.IsNotExist(err) {
+			return fmt.Errorf("check after script %s existence: %v",
+				d.AfterScript, err)
 		}
 	}
 
