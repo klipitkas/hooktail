@@ -143,6 +143,10 @@ func runScript(path string, user string) error {
 // runBefore runs the script that is specified to be ran
 // before the deployment takes place.
 func runBefore(d Deployment) error {
+	// Check if there is a before script.
+	if d.BeforeScript == "" {
+		return nil
+	}
 	// Run the before script
 	if err := runScript(d.BeforeScript, d.User); err != nil {
 		return fmt.Errorf("before script: %v", err)
@@ -153,6 +157,10 @@ func runBefore(d Deployment) error {
 // runAfter runs the script that is specified to be ran
 // after the deployment takes place.
 func runAfter(d Deployment) error {
+	// Check for after script.
+	if d.AfterScript == "" {
+		return nil
+	}
 	// Run the after script
 	if err := runScript(d.AfterScript, d.User); err != nil {
 		return fmt.Errorf("after script: %v", err)
