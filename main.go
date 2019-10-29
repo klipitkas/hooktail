@@ -57,7 +57,9 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	// Extract the content type from the headers.
 	contentType := strings.ToLower(req.Header.Get("Content-Type"))
 	if contentType != ApplicationJSON {
-		log.Printf("got invalid request content type: %v", contentType)
+		log.Printf("got invalid request: %v", body)
+		w.WriteHeader(200)
+		w.Write([]byte("I don't speak this language."))
 		return
 	}
 
@@ -87,8 +89,8 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 
 	// Check the validity of the request and deployment.
 	if match.Secret != "" {
-		ok := request.HasValidSignature(match.Secret)
-		if !ok {
+		validSignature := request.HasValidSignature(match.Secret)
+		if !validSignature {
 			log.Printf("Request integrity check failed, please verify the secret!")
 			w.WriteHeader(400)
 			w.Write([]byte("Invalid secret or signature."))
@@ -96,14 +98,14 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+	// Respond timely to the webook.
+	w.WriteHeader(200)
+	w.Write([]byte("Deployment has started."))
+
 	// Run the deployment.
 	if err = deployment.Deploy(match); err != nil {
 		log.Printf("run deployment: %v", err)
-		w.WriteHeader(500)
-		w.Write([]byte("Deployment failed."))
 		return
 	}
 
-	w.WriteHeader(200)
-	w.Write([]byte("Deployment successfully completed."))
 }
