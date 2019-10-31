@@ -3,12 +3,12 @@ package deployment
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/user"
 	"path"
 
 	"github.com/klipitkas/hooktail/common"
+	"github.com/klipitkas/hooktail/logging"
 	"github.com/klipitkas/hooktail/request"
 )
 
@@ -86,38 +86,43 @@ func Validate(d Deployment) error {
 // Deploy executes a specific deployment configuration.
 func Deploy(d Deployment) {
 
-	log.Printf("Starting deployment for repository: %v", d.Repository)
+	logging.Log.Printf("Starting deployment for repository: %v", d.Repository)
 
 	// Validate the deployment first.
 	if err := Validate(d); err != nil {
-		log.Fatalf("validate deployment: %v", err)
+		logging.Log.Errorf("validate deployment: %v", err)
+		return
 	}
 
-	log.Printf("Validated deployment information.")
+	logging.Log.Printf("Validated deployment information.")
 
 	// Execute any script that needs to be executed before
 	// the deployment.
 	if err := runBefore(d); err != nil {
-		log.Fatalf("before deployment: %v", err)
+		logging.Log.Errorf("before deployment: %v", err)
+		return
 	}
 
-	log.Printf("Finished running before scripts.")
+	logging.Log.Printf("Finished running before scripts.")
 
 	// Execute the deployment
 	if err := run(d); err != nil {
-		log.Fatalf("run deployment: %v", err)
+		logging.Log.Errorf("run deployment: %v", err)
+		return
 	}
 
-	log.Printf("Finished running deployment.")
+	logging.Log.Printf("Finished running deployment.")
 
 	// Execute any script that needs to be executed after
 	// the deployment.
 	if err := runAfter(d); err != nil {
-		log.Fatalf("after deployment: %v", err)
+		logging.Log.Errorf("after deployment: %v", err)
+		return
 	}
 
-	log.Printf("Finished running after scripts.")
-	log.Printf("Deployment for repository: %v has been completed.", d.Repository)
+	logging.Log.Printf("Finished running after scripts.")
+	logging.Log.Printf("Deployment for repository: %v has been completed.",
+		d.Repository)
 }
 
 // run executes the core deployment commands.

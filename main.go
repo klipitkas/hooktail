@@ -4,12 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
 	config "github.com/klipitkas/hooktail/config"
 	deployment "github.com/klipitkas/hooktail/deployment"
+	"github.com/klipitkas/hooktail/logging"
 	request "github.com/klipitkas/hooktail/request"
 )
 
@@ -31,21 +31,21 @@ func main() {
 
 	// The configuration struct.
 	if err := config.Parse(&conf, configPath); err != nil {
-		log.Fatalf("parsing configuration: %v", err)
+		logging.Log.Fatalf("parsing configuration: %v", err)
 	}
 
 	// The list of request handlers.
 	http.HandleFunc("/", handleRequest)
 
 	// Log the server start.
-	log.Printf("Starting HTTP server on port: %v", conf.Port)
+	logging.Log.Printf("Starting HTTP server on port: %v", conf.Port)
 
 	// The port in string format.
 	portStr := fmt.Sprintf("%d", conf.Port)
 
 	// The server configuration.
 	if err := http.ListenAndServe(":"+portStr, nil); err != nil {
-		log.Fatalf("listen on port %d failed: %v", conf.Port, err)
+		logging.Log.Fatalf("listen on port %d failed: %v", conf.Port, err)
 	}
 }
 
@@ -57,7 +57,7 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	// Extract the content type from the headers.
 	contentType := strings.ToLower(req.Header.Get("Content-Type"))
 	if contentType != ApplicationJSON {
-		log.Printf("got invalid request: %v", body)
+		logging.Log.Errorf("got invalid request: %v", body)
 		w.WriteHeader(200)
 		w.Write([]byte("I don't speak this language."))
 		return
@@ -70,7 +70,7 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if err = request.Parse(body); err != nil {
-		log.Printf("cannot unmarshal string: %v", err)
+		logging.Log.Errorf("cannot unmarshal string: %v", err)
 		w.WriteHeader(500)
 		w.Write([]byte("Error parsing request body to request struct."))
 		return
@@ -81,7 +81,7 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	notFound := deployment.Deployment{}
 
 	if match == notFound {
-		log.Printf("A deployment that matches the request cannot be found!")
+		logging.Log.Warnf("A deployment that matches the request cannot be found!")
 		w.WriteHeader(404)
 		w.Write([]byte("A matching deployment was not found."))
 		return
@@ -91,7 +91,8 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	if match.Secret != "" {
 		validSignature := request.HasValidSignature(match.Secret)
 		if !validSignature {
-			log.Printf("Request integrity check failed, please verify the secret!")
+			logging.Log.Errorf("Request integrity check failed, please verify the " +
+				"secret!")
 			w.WriteHeader(400)
 			w.Write([]byte("Invalid secret or signature."))
 			return

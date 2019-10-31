@@ -4,6 +4,9 @@
 # Binaries
 hooktail
 
+# Log files
+*.log
+
 # Configuration files
 !.config.example.yml
 *.yml
