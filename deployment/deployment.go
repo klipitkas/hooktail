@@ -3,6 +3,7 @@ package deployment
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"os/user"
 	"path"
@@ -83,31 +84,40 @@ func Validate(d Deployment) error {
 }
 
 // Deploy executes a specific deployment configuration.
-func Deploy(d Deployment) error {
+func Deploy(d Deployment) {
+
+	log.Printf("Starting deployment for repository: %v", d.Repository)
 
 	// Validate the deployment first.
 	if err := Validate(d); err != nil {
-		return fmt.Errorf("validate deployment: %v", err)
+		log.Fatalf("validate deployment: %v", err)
 	}
+
+	log.Printf("Validated deployment information.")
 
 	// Execute any script that needs to be executed before
 	// the deployment.
 	if err := runBefore(d); err != nil {
-		return fmt.Errorf("before deployment: %v", err)
+		log.Fatalf("before deployment: %v", err)
 	}
+
+	log.Printf("Finished running before scripts.")
 
 	// Execute the deployment
 	if err := run(d); err != nil {
-		return fmt.Errorf("run deployment: %v", err)
+		log.Fatalf("run deployment: %v", err)
 	}
+
+	log.Printf("Finished running deployment.")
 
 	// Execute any script that needs to be executed after
 	// the deployment.
 	if err := runAfter(d); err != nil {
-		return fmt.Errorf("after deployment: %v", err)
+		log.Fatalf("after deployment: %v", err)
 	}
 
-	return nil
+	log.Printf("Finished running after scripts.")
+	log.Printf("Deployment for repository: %v has been completed.", d.Repository)
 }
 
 // run executes the core deployment commands.

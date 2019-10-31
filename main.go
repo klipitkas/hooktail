@@ -103,9 +103,5 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("Deployment has started."))
 
 	// Run the deployment.
-	if err = deployment.Deploy(match); err != nil {
-		log.Printf("run deployment: %v", err)
-		return
-	}
-
+	go deployment.Deploy(match)
 }
