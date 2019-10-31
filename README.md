@@ -4,7 +4,7 @@
 
 ---
 
-<img src="https://www.mariowiki.com/images/thumb/d/dd/Hooktail_Artwork_-_Paper_Mario_The_Thousand-Year_Door.png/1254px-Hooktail_Artwork_-_Paper_Mario_The_Thousand-Year_Door.png" width="150">
+<img src="https://www.nicepng.com/png/full/133-1332501_502px-hooktail-artwork-paper-mario-hooktail.png" width="150">
 
 Hooktail is an HTTP server written in Go that can be used for github webhook
 deployments.
