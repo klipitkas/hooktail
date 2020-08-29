@@ -11,7 +11,7 @@ import (
 var Log = log.New()
 
 // The default file for logging.
-var logFile = "hooktail.log"
+var logFile = "/var/log/hooktail.log"
 
 func init() {
 	// Open the log file and try writing to it.
@@ -20,7 +20,7 @@ func init() {
 		0644)
 
 	if err != nil {
-		Log.Fatalf("write to log file %s: %v", logFile.Name(), err)
+		Log.Fatalf("Write to log file %s: %v", logFile.Name(), err)
 	}
 
 	// Write logs to both os.Stdout and logfile
@@ -33,7 +33,5 @@ func init() {
 	Log.SetLevel(log.InfoLevel)
 
 	// Set the default formatter options.
-	Log.SetFormatter(&log.TextFormatter{
-		ForceColors: true,
-	})
+	Log.SetFormatter(&log.TextFormatter{ForceColors: true})
 }
